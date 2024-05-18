@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class AIPreformanceComparation : ModuleRules
+public class AIPerformanceComparation : ModuleRules
 {
-	public AIPreformanceComparation(ReadOnlyTargetRules Target) : base(Target)
+	public AIPerformanceComparation(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		
