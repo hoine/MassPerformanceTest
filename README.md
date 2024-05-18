@@ -1,0 +1,1 @@
+Using Mass AI and comparation his performance with default approach
