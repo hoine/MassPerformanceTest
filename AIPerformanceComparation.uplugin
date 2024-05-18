@@ -2,7 +2,7 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0",
-	"FriendlyName": "AIPreformanceComparation",
+	"FriendlyName": "AI Performance Comparation",
 	"Description": "",
 	"Category": "Other",
 	"CreatedBy": "Greg",
@@ -16,7 +16,7 @@
 	"Installed": false,
 	"Modules": [
 		{
-			"Name": "AIPreformanceComparation",
+			"Name": "AIPerformanceComparation",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		}

@@ -1,15 +1,14 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
+#include "AIPerformanceComparation.h"
 
-#include "AIPreformanceComparation.h"
+#define LOCTEXT_NAMESPACE "FAIPerformanceComparationModule"
 
-#define LOCTEXT_NAMESPACE "FAIPreformanceComparationModule"
-
-void FAIPreformanceComparationModule::StartupModule()
+void FAIPerformanceComparationModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
 }
 
-void FAIPreformanceComparationModule::ShutdownModule()
+void FAIPerformanceComparationModule::ShutdownModule()
 {
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
@@ -17,4 +16,4 @@ void FAIPreformanceComparationModule::ShutdownModule()
 
 #undef LOCTEXT_NAMESPACE
 	
-IMPLEMENT_MODULE(FAIPreformanceComparationModule, AIPreformanceComparation)
+IMPLEMENT_MODULE(FAIPerformanceComparationModule, AIPreformanceComparation)
