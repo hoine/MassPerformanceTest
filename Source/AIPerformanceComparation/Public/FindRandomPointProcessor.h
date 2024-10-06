@@ -6,6 +6,7 @@
 #include "MassProcessor.h"
 #include "FindRandomPointProcessor.generated.h"
 
+class UNavMeshPathSubsystem;
 /**
  * 
  */
@@ -16,11 +17,15 @@ class AIPERFORMANCECOMPARATION_API UFindRandomPointProcessor: public UMassProces
 
 public:
 	UFindRandomPointProcessor();
-	
+	void Initialize(UObject& Owner);
+
 protected:
 	virtual void ConfigureQueries() override;
 	virtual void Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context) override;
 
 private:
 	FMassEntityQuery EntityQuery;
+
+	UPROPERTY()
+	TObjectPtr<UNavMeshPathSubsystem> MassNavSubsystem;
 };

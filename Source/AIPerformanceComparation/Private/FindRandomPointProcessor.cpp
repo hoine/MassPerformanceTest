@@ -7,6 +7,7 @@
 #include "MassExecutionContext.h"
 #include "MassNavigationFragments.h"
 #include "NavMeshPathFollowProcessor.h"
+#include "NavMeshPathSubsystem.h"
 
 
 DECLARE_LOG_CATEGORY_EXTERN(LogNavMeshNav, Log, All)
@@ -20,6 +21,12 @@ UFindRandomPointProcessor::UFindRandomPointProcessor()
 	ExecutionFlags = (int32)(EProcessorExecutionFlags::Standalone | EProcessorExecutionFlags::Server);
 	ExecutionOrder.ExecuteAfter.Add(UE::Mass::ProcessorGroupNames::Tasks);
 	ExecutionOrder.ExecuteBefore.Add(UE::Mass::ProcessorGroupNames::Avoidance);
+}
+
+void UFindRandomPointProcessor::Initialize(UObject& Owner)
+{
+	Super::Initialize(Owner);
+	MassNavSubsystem = UWorld::GetSubsystem<UNavMeshPathSubsystem>(Owner.GetWorld());
 }
 
 void UFindRandomPointProcessor::ConfigureQueries()
@@ -42,8 +49,7 @@ void UFindRandomPointProcessor::Execute(FMassEntityManager& EntityManager, FMass
 			if (NavMeshPathFragment.DestinationPosition.IsZero())
 			{
 				const FVector& EntityPosition = TransformFragments[EntityIndex].GetTransform().GetLocation();
-				const FVector2D Rand2DPoint = FMath::RandPointInCircle(1000.f);
-				NavMeshPathFragment.DestinationPosition = EntityPosition + FVector(Rand2DPoint.X, Rand2DPoint.Y, 0.f);
+				NavMeshPathFragment.DestinationPosition = MassNavSubsystem->GetRandomPointInNavigableRadius(EntityPosition, 1000.f);
 				UE_VLOG_SPHERE(this, LogNavMeshNav, Log, NavMeshPathFragment.DestinationPosition, 10, FColor::Red, TEXT("NavMeshRandomPoint"));
 				NavMeshPathFragment.bCalculated = false;
 			}

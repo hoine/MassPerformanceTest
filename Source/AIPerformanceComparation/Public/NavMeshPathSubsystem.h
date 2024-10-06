@@ -18,7 +18,8 @@ class UNavMeshPathSubsystem : public UMassSubsystemBase
 
 public:
 	bool FindPath(const FVector& StartLocation, const FVector& Destination, TArray<FVector>& OutPoints);
-	
+	FVector GetRandomPointInNavigableRadius(const FVector& StartLocation, float Radius);
+
 protected:
 	// USubsystem BEGIN
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;

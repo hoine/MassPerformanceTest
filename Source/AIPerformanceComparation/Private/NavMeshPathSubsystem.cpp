@@ -59,3 +59,15 @@ bool UNavMeshPathSubsystem::FindPath(const FVector& StartLocation, const FVector
 	
 	return false;
 }
+
+FVector UNavMeshPathSubsystem::GetRandomPointInNavigableRadius(const FVector& StartLocation, const float Radius)
+{
+	if (NavSys == nullptr)
+	{
+		NavSys = UNavigationSystemV1::GetCurrent(GetWorld());
+	}
+	
+	FNavLocation ResultLocation;
+	NavSys->GetRandomPointInNavigableRadius(StartLocation, Radius, ResultLocation);
+	return ResultLocation.Location;
+}
