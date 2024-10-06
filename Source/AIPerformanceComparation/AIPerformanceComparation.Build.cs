@@ -25,7 +25,12 @@ public class AIPerformanceComparation : ModuleRules
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"Core",
+				"Core", 
+				"MassEntity",
+				"MassCommon",
+				"MassEntity", 
+				"MassSpawner",
+				"StructUtils"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -37,7 +42,10 @@ public class AIPerformanceComparation : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"Slate",
-				"SlateCore",
+				"SlateCore", 
+				"MassNavigation", 
+				"NavigationSystem",
+				"MassLOD",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
