@@ -11,7 +11,7 @@
 class UNavMeshPathSubsystem;
 
 USTRUCT()
-struct FNaveMeshSimpleMovementFragment : public FMassSharedFragment
+struct FNaveMeshSimpleMovementFragment : public FMassConstSharedFragment
 {
 	GENERATED_BODY()
 

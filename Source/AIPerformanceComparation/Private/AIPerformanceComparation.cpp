@@ -16,4 +16,4 @@ void FAIPerformanceComparationModule::ShutdownModule()
 
 #undef LOCTEXT_NAMESPACE
 	
-IMPLEMENT_MODULE(FAIPerformanceComparationModule, AIPreformanceComparation)
+IMPLEMENT_MODULE(FAIPerformanceComparationModule, AIPerformanceComparation)

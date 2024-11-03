@@ -22,7 +22,13 @@ bool UNavMeshPathSubsystem::FindPath(const FVector& StartLocation, const FVector
 	if (NavSys)
 	{
 		const ANavigationData* NavData = NavSys->GetDefaultNavDataInstance();
-		const FPathFindingQuery Query(nullptr, *NavData, StartLocation, Destination, UNavigationQueryFilter::GetQueryFilter(*NavData, nullptr, nullptr));
+		FPathFindingQuery Query(nullptr, *NavData, StartLocation, Destination, UNavigationQueryFilter::GetQueryFilter(*NavData, nullptr, nullptr));
+		FNavAgentProperties Properties;
+		Properties.AgentHeight = 170.f;
+		Properties.AgentRadius = 60.f;
+		Properties.AgentStepHeight = 50.f;
+		
+		Query.SetNavAgentProperties(Properties);
 		const FPathFindingResult Result = NavSys->FindPathSync(Query, EPathFindingMode::Regular);
 		if (Result.IsSuccessful())
 		{
