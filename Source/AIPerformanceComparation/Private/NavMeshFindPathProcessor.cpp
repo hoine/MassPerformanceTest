@@ -43,14 +43,17 @@ void UNavMeshFindPathProcessor::Execute(FMassEntityManager& EntityManager, FMass
 		{
 			const FVector& StartLocation = TransformFragments[EntityIndex].GetTransform().GetLocation();
 			FNavMeshPathFragment& PathFragment = PathFragments[EntityIndex];
-			if (PathFragment.bCalculated == false)
+			if (PathFragment.IsValid())
 			{
 				TArray<FVector> OutPoints;
 				if (MassNavSubsystem->FindPath(StartLocation, PathFragment.DestinationPosition, OutPoints))
 				{
 					PathFragment.CurrentPath = OutPoints;
 					PathFragment.CurrentPathIndex = 0;
-					PathFragment.bCalculated = true;
+				}
+				else
+				{
+					PathFragment.Reset();
 				}
 			}
 		}

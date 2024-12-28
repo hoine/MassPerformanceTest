@@ -14,7 +14,7 @@ UE_DISABLE_OPTIMIZATION
 
 bool FNavMeshPathFragment::IsNear(const FVector& InPosition)
 {
-	return bCalculated && FVector::DistSquared(InPosition, GetCurrentDestinationLocation()) < 1000.0;
+	return IsValid() && FVector::DistSquared(InPosition, GetCurrentDestinationLocation()) < 1000.0;
 }
 
 FVector FNavMeshPathFragment::GetCurrentDestinationLocation()
@@ -27,16 +27,20 @@ FVector FNavMeshPathFragment::GetCurrentDestinationLocation()
 	return FVector::ZeroVector;
 }
 
+void FNavMeshPathFragment::Reset()
+{
+	CurrentPath.Empty();
+	CurrentPathIndex = 0;
+	DestinationPosition = FVector::ZeroVector;
+	bInProgress = false;
+}
+
 void FNavMeshPathFragment::Next()
 {
 	CurrentPathIndex++;
 	if (!CurrentPath.IsValidIndex(CurrentPathIndex))
 	{
-		bCalculated = false;
-		CurrentPath.Reset();
-		CurrentPathIndex = 0;
-		DestinationPosition = FVector::ZeroVector;
-		bInProgress = false;
+		Reset();
 	}
 }
 

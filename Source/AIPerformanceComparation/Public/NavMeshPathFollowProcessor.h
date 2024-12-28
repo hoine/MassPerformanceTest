@@ -31,17 +31,17 @@ struct FNavMeshPathFragment : public FMassFragment
 	int32 CurrentPathIndex;
 
 	UPROPERTY()
-	FVector DestinationPosition;
+	FVector DestinationPosition = FVector::Zero();
 	
 	UPROPERTY(Transient)
-	bool bCalculated = false;
 	bool bInProgress = false;
 	
 	bool IsNear(const FVector& InPosition);
 	
 	FVector GetCurrentDestinationLocation();
+	void Reset();
 
-	bool IsValid() const { return bCalculated; }
+	bool IsValid() const { return (!CurrentPath.IsEmpty() && CurrentPathIndex < CurrentPath.Num()) || !DestinationPosition.IsZero(); }
 
 	void Next();
 };
