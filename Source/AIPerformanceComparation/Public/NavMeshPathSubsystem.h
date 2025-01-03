@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "MassSubsystemBase.h"
 #include "NavigationSystem.h"
+#include "NavMeshPathFollowProcessor.h"
 #include "NavMeshPathSubsystem.generated.h"
 
 /**
@@ -17,16 +18,8 @@ class UNavMeshPathSubsystem : public UMassSubsystemBase
 	GENERATED_BODY()
 
 public:
-	bool FindPath(const FVector& StartLocation, const FVector& Destination, TArray<FVector>& OutPoints);
-	FVector GetRandomPointInNavigableRadius(const FVector& StartLocation, float Radius);
-
-protected:
-	// USubsystem BEGIN
-	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
-	virtual void Deinitialize() override;
-	// USubsystem END
-
-protected:
-	UPROPERTY(Transient)
-	TSoftObjectPtr<UNavigationSystemV1> NavSys;
+	bool FindPath(const FVector& StartLocation, const FVector& Destination, TArray<FVector>& OutPoints) const;
+	bool FindPath(const FVector& StartLocation, const FVector& Destination, FNavMeshPathFragment& OutPathFragment) const;
+	
+	bool GetRandomPointInNavigableRadius(const FVector& StartLocation, float Radius, FVector& OutRandomLocation) const;
 };

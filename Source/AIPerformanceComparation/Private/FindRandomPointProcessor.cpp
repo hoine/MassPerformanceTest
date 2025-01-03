@@ -64,7 +64,7 @@ void UFindRandomPointProcessor::Execute(FMassEntityManager& EntityManager, FMass
 			if (NavMeshPathFragment.DestinationPosition.IsZero())
 			{
 				const FVector& EntityPosition = TransformFragments[EntityIndex].GetTransform().GetLocation();
-				NavMeshPathFragment.DestinationPosition = MassNavSubsystem->GetRandomPointInNavigableRadius(EntityPosition, RandomPointFragment.Radius);
+				MassNavSubsystem->GetRandomPointInNavigableRadius(EntityPosition, RandomPointFragment.Radius, NavMeshPathFragment.DestinationPosition);
 				UE_VLOG_SPHERE(this, LogNavMeshNav, Log, NavMeshPathFragment.DestinationPosition, 10, FColor::Red, TEXT("NavMeshRandomPoint"));
 			}
 		}

@@ -3,11 +3,12 @@
 
 #include "NavMeshFindPathProcessor.h"
 
+#include "FindRandomPointProcessor.h"
 #include "MassCommonFragments.h"
 #include "MassCommonTypes.h"
 #include "MassExecutionContext.h"
-#include "MassNavigationFragments.h"
 #include "NavMeshPathFollowProcessor.h"
+
 UE_DISABLE_OPTIMIZATION
 UNavMeshFindPathProcessor::UNavMeshFindPathProcessor()
 	: EntityQuery(*this)
@@ -28,6 +29,7 @@ void UNavMeshFindPathProcessor::ConfigureQueries()
 {
 	EntityQuery.AddRequirement<FNavMeshPathFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadOnly);
+	EntityQuery.AddTagRequirement<FMassFindRandomTag>(EMassFragmentPresence::All);
 }
 
 void UNavMeshFindPathProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
@@ -48,12 +50,7 @@ void UNavMeshFindPathProcessor::Execute(FMassEntityManager& EntityManager, FMass
 				TArray<FVector> OutPoints;
 				if (MassNavSubsystem->FindPath(StartLocation, PathFragment.DestinationPosition, OutPoints))
 				{
-					PathFragment.CurrentPath = OutPoints;
-					PathFragment.CurrentPathIndex = 0;
-				}
-				else
-				{
-					PathFragment.Reset();
+					PathFragment.SetNewPathPoints(OutPoints);
 				}
 			}
 		}

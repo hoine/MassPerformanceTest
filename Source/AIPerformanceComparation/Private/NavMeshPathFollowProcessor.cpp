@@ -8,40 +8,68 @@
 #include "MassExecutionContext.h"
 #include "MassMovementFragments.h"
 #include "MassNavigationFragments.h"
+#include "MassSignalSubsystem.h"
 #include "MassSimulationLOD.h"
 
 UE_DISABLE_OPTIMIZATION
 
-bool FNavMeshPathFragment::IsNear(const FVector& InPosition)
+FVector FNavMeshPathFragment::GetTargetPosition()
 {
-	return IsValid() && FVector::DistSquared(InPosition, GetCurrentDestinationLocation()) < 1000.0;
-}
-
-FVector FNavMeshPathFragment::GetCurrentDestinationLocation()
-{
-	if (CurrentPath.IsValidIndex(CurrentPathIndex))
+	if (PathPoints.IsValidIndex(CurrentPathIndex))
 	{
-		return CurrentPath[CurrentPathIndex];
+		return PathPoints[CurrentPathIndex];
 	}
 
 	return FVector::ZeroVector;
 }
 
-void FNavMeshPathFragment::Reset()
+void FNavMeshPathFragment::SetNewPathPoints(const TArray<FVector>& NewPathPoints)
 {
-	CurrentPath.Empty();
-	CurrentPathIndex = 0;
-	DestinationPosition = FVector::ZeroVector;
-	bInProgress = false;
+	if (NewPathPoints.Num() < 1)
+	{
+		Status = ENavMeshPathFragmentStatus::Invalid;
+		return;
+	}
+	
+	PathPoints.Reset();
+	PathPoints = NewPathPoints;
+	Status = ENavMeshPathFragmentStatus::PathFound;
+	CurrentPathIndex = 1;
 }
 
-void FNavMeshPathFragment::Next()
+void FNavMeshPathFragment::CreateNewMoveAction(FMassMoveTargetFragment& MoveTarget, const UWorld& World, const FVector& EntityPosition, const FMassMovementParameters& MovementParams)
 {
-	CurrentPathIndex++;
-	if (!CurrentPath.IsValidIndex(CurrentPathIndex))
+	const FVector& LastPosition = GetTargetPosition();
+	const FVector ToTarget = LastPosition - EntityPosition;
+	
+	MoveTarget.CreateNewAction(EMassMovementAction::Move, World);
+	
+	MoveTarget.Center = LastPosition;
+	MoveTarget.Forward = ToTarget.GetSafeNormal();
+	MoveTarget.DistanceToGoal = ToTarget.Length();;
+	MoveTarget.bOffBoundaries = false;
+	MoveTarget.DesiredSpeed.Set(MovementParams.MaxSpeed);
+
+	Status = ENavMeshPathFragmentStatus::InProgress;
+}
+
+void FNavMeshPathFragment::Update(const float DeltaSeconds, const FVector& EntityPosition, const float MaxSpeed, FMassMoveTargetFragment& MoveTarget)
+{
+	const FVector ToTarget = GetTargetPosition() - EntityPosition;
+	const float DeltaMovement =  DeltaSeconds* MaxSpeed;
+	const float DistanceToTarget = ToTarget.Length();
+	if (DistanceToTarget <= DeltaMovement)
 	{
-		Reset();
+		CurrentPathIndex++;
+		if (!PathPoints.IsValidIndex(CurrentPathIndex))
+		{
+			Status = ENavMeshPathFragmentStatus::Finished;
+		}
 	}
+	
+	MoveTarget.Center = GetTargetPosition();
+	MoveTarget.Forward = ToTarget.GetSafeNormal();
+	MoveTarget.DistanceToGoal = ToTarget.Length();;
 }
 
 void UNavMeshMovementTrait::BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World) const
@@ -64,6 +92,12 @@ UNavMeshPathFollowProcessor::UNavMeshPathFollowProcessor()
 	ExecutionOrder.ExecuteBefore.Add(UE::Mass::ProcessorGroupNames::Avoidance);
 }
 
+void UNavMeshPathFollowProcessor::Initialize(UObject& Owner)
+{
+	Super::Initialize(Owner);
+	SignalSubsystem = UWorld::GetSubsystem<UMassSignalSubsystem>(Owner.GetWorld());
+}
+
 void UNavMeshPathFollowProcessor::ConfigureQueries()
 {
 	EntityQuery.AddRequirement<FNavMeshPathFragment>(EMassFragmentAccess::ReadWrite);
@@ -81,13 +115,12 @@ void UNavMeshPathFollowProcessor::Execute(FMassEntityManager& EntityManager, FMa
 
 		const TArrayView<FNavMeshPathFragment>& PathFragments = Context.GetMutableFragmentView<FNavMeshPathFragment>();
 		const TArrayView<FMassMoveTargetFragment>& MoveTargetFragments = Context.GetMutableFragmentView<FMassMoveTargetFragment>();
-		
 		const TConstArrayView<FTransformFragment>& TransformFragments = Context.GetFragmentView<FTransformFragment>();
 
 		for (int32 EntityIndex = 0; EntityIndex < NumEntities; ++EntityIndex)
 		{
 			FNavMeshPathFragment& PathFragment = PathFragments[EntityIndex];
-			if (!PathFragment.IsValid())
+			if (!PathFragment.IsValid() || PathFragment.GetStatus() == ENavMeshPathFragmentStatus::Finished)
 			{
 				continue;
 			}
@@ -97,27 +130,22 @@ void UNavMeshPathFollowProcessor::Execute(FMassEntityManager& EntityManager, FMa
 			const FMassMovementParameters& MovementParams = Context.GetConstSharedFragment<FMassMovementParameters>();
 		
 			FVector EntityPosition = TransformFragment.GetTransform().GetLocation();
-			const FVector ToTarget = PathFragment.GetCurrentDestinationLocation() - EntityPosition;
 			
-			const float DeltaMovement = Context.GetDeltaTimeSeconds() * MovementParams.MaxSpeed;
-			const float DistanceToTarget = ToTarget.Length();
-			if (DistanceToTarget <= DeltaMovement)
+			if (PathFragment.GetStatus() == ENavMeshPathFragmentStatus::PathFound)
 			{
-				PathFragment.Next();
-				continue;
+				PathFragment.CreateNewMoveAction(MoveTarget, *Context.GetWorld(), EntityPosition, MovementParams);
 			}
-			
-			if (!PathFragment.bInProgress)
+			else if (PathFragment.GetStatus() == ENavMeshPathFragmentStatus::InProgress)
 			{
-				MoveTarget.CreateNewAction(EMassMovementAction::Move, *Context.GetWorld());
-				PathFragment.bInProgress = true;
-			}
+				PathFragment.Update(Context.GetDeltaTimeSeconds(), EntityPosition, MovementParams.MaxSpeed, MoveTarget);
 
-			MoveTarget.Center = PathFragment.GetCurrentDestinationLocation();
-			MoveTarget.Forward = ToTarget.GetSafeNormal();
-			MoveTarget.DistanceToGoal = DistanceToTarget;
-			MoveTarget.bOffBoundaries = false;
-			MoveTarget.DesiredSpeed.Set(MovementParams.MaxSpeed);
+				if (PathFragment.GetStatus() == ENavMeshPathFragmentStatus::Finished)
+				{
+					const FMassEntityHandle Entity = Context.GetEntity(EntityIndex);
+					SignalSubsystem->SignalEntity("MyCustomName", Entity);
+					MoveTarget.CreateNewAction(EMassMovementAction::Stand,  *Context.GetWorld());
+				}
+			}
 		}
 	});
 }

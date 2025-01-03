@@ -31,8 +31,10 @@ public class AIPerformanceComparation : ModuleRules
 				"MassEntity", 
 				"MassSpawner",
 				"StructUtils",
-				"MassMovement",
-				// ... add other public dependencies that you statically link with here ...
+				"MassMovement", 
+				"MassAIBehavior",
+				"StateTreeModule",
+				"MassSignals"
 			}
 			);
 			

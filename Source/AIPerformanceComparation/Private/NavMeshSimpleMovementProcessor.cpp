@@ -41,13 +41,14 @@ void UNavMeshSimpleMovementProcessor::Execute(FMassEntityManager& EntityManager,
 			if (PathFragment.IsValid())
 			{
 				FTransform& EntityTransform = TransformFragments[EntityIndex].GetMutableTransform();
-				FVector ToTarget = PathFragment.GetCurrentDestinationLocation() - EntityTransform.GetLocation();
-				if (ToTarget.Length() < 1.0f)
+				//PathFragment.Update(Context.GetDeltaTimeSeconds(), EntityTransform.GetLocation(), NaveMeshSimpleMovementFragment.MovementSpeed, TODO);
+
+				if (PathFragment.GetStatus() == ENavMeshPathFragmentStatus::Finished)
 				{
-					PathFragment.Next();
 					continue;
 				}
 				
+				FVector ToTarget = PathFragment.GetTargetPosition() - EntityTransform.GetLocation();
 				FVector Acceleration = ToTarget.GetSafeNormal() * NaveMeshSimpleMovementFragment.MovementSpeed * DeltaTime;
 				
 				EntityTransform.SetLocation(EntityTransform.GetLocation() + Acceleration);
